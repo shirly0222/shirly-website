@@ -22,8 +22,115 @@ const defaultData = {
     settings: { theme:'light' }
 };
 
+// GitHub 配置
+function getGitHubConfig() {
+    const token = localStorage.getItem('githubToken');
+    return {
+        owner: 'shirly0222',
+        repo: 'shirly-website',
+        branch: 'main',
+        filePath: 'data.json',
+        token: token || ''
+    };
+}
+
 function getData() { const s=localStorage.getItem('shirlyWebsiteData'); return s?JSON.parse(s):JSON.parse(JSON.stringify(defaultData)); }
 function saveData(d) { localStorage.setItem('shirlyWebsiteData', JSON.stringify(d)); }
 function exportData() { const d=getData(); const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='shirly-website-backup-'+new Date().toISOString().split('T')[0]+'.json'; a.click(); }
 function importData(fi) { const f=fi.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(e){ try{ const d=JSON.parse(e.target.result); saveData(d); alert('✅ 导入成功！刷新页面生效'); location.reload(); }catch(err){ alert('❌ 导入失败'); } }; r.readAsText(f); }
 function resetData() { if(confirm('⚠️ 确定重置？')){ localStorage.removeItem('shirlyWebsiteData'); location.reload(); } }
+
+// GitHub Token 管理
+function setGitHubToken(token) {
+    localStorage.setItem('githubToken', token);
+    alert('✅ Token 已保存！');
+}
+
+function clearGitHubToken() {
+    localStorage.removeItem('githubToken');
+    alert('✅ Token 已清除！');
+}
+
+// GitHub 数据同步功能
+async function syncToGitHub() {
+    const config = getGitHubConfig();
+    if (!config.token) {
+        alert('❌ 请先设置 GitHub Token！');
+        return;
+    }
+    
+    const data = getData();
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+    
+    try {
+        // 先获取文件信息（看是否已存在）
+        let fileSha = null;
+        try {
+            const getResponse = await fetch(
+                `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.filePath}`,
+                { headers: { 'Authorization': `token ${config.token}` } }
+            );
+            if (getResponse.ok) {
+                const fileData = await getResponse.json();
+                fileSha = fileData.sha;
+            }
+        } catch(e) {
+            // 文件不存在，继续
+        }
+        
+        // 上传文件
+        const response = await fetch(
+            `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.filePath}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${config.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: '更新网站数据',
+                    content: content,
+                    sha: fileSha,
+                    branch: config.branch
+                })
+            }
+        );
+        
+        if (response.ok) {
+            alert('✅ 数据已同步到 GitHub！');
+        } else {
+            const error = await response.json();
+            alert('❌ 同步失败：' + (error.message || '未知错误'));
+        }
+    } catch (error) {
+        alert('❌ 同步出错：' + error.message);
+    }
+}
+
+async function loadFromGitHub() {
+    const config = getGitHubConfig();
+    if (!config.token) {
+        alert('❌ 请先设置 GitHub Token！');
+        return;
+    }
+    
+    try {
+        const response = await fetch(
+            `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.filePath}`,
+            { headers: { 'Authorization': `token ${config.token}` } }
+        );
+        
+        if (response.ok) {
+            const fileData = await response.json();
+            const content = decodeURIComponent(escape(atob(fileData.content)));
+            const data = JSON.parse(content);
+            saveData(data);
+            alert('✅ 已从 GitHub 加载数据！刷新页面生效');
+            location.reload();
+        } else {
+            alert('❌ 加载失败：文件不存在或无权限');
+        }
+    } catch (error) {
+        alert('❌ 加载出错：' + error.message);
+    }
+}
