@@ -19,6 +19,7 @@ const defaultData = {
     books: [ { id:1, title:'被讨厌的勇气', author:'岸见一郎', rating:5, comment:'改变了我很多想法', date:'2026-02-28', img:'' } ],
     collections: [ { id:1, name:'一个很好用的笔记APP', url:'', type:'APP', note:'' } ],
     guestbook: [ { id:1, name:'橘子', message:'来踩踩！网站超可爱！', date:'2026-03-06' } ],
+    english: { history: [] },
     settings: { theme:'light' }
 };
 

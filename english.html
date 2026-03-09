@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语学习打卡 | shirly 的可爱小窝 🌸</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🍊 shirly 的小窝</div>
+        <div class="nav-links">
+            <a href="index.html">首页</a>
+            <a href="plans.html">年度计划</a>
+            <a href="works.html">作品集</a>
+            <a href="articles.html">想法文章</a>
+            <a href="diary.html">生活打卡</a>
+            <a href="english.html" class="active">英语学习</a>
+            <a href="timeline.html">重大事件</a>
+            <a href="about.html">关于我</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 style="text-align:center;color:#ff6b9d;margin-bottom:2rem;">📚 英语学习打卡</h1>
+        
+        <!-- 今日学习 -->
+        <section style="background:white;padding:2rem;border-radius:16px;margin-bottom:2rem;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="color:#7a5a7f;margin-bottom:1rem;">🎯 今日学习（30分钟）</h2>
+            
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:#faf5fc;padding:1.5rem;border-radius:12px;text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">👂</div>
+                    <h3 style="color:#7a5a7f;margin-bottom:0.5rem;">听力输入</h3>
+                    <p style="color:#9a7a9f;font-size:0.9rem;margin-bottom:1rem;">10分钟</p>
+                    <input type="checkbox" id="listening" onchange="updateProgress()" style="width:24px;height:24px;cursor:pointer;">
+                    <label for="listening" style="color:#7a5a7f;cursor:pointer;">已完成</label>
+                </div>
+                
+                <div style="background:#faf5fc;padding:1.5rem;border-radius:12px;text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">🗣️</div>
+                    <h3 style="color:#7a5a7f;margin-bottom:0.5rem;">口语练习</h3>
+                    <p style="color:#9a7a9f;font-size:0.9rem;margin-bottom:1rem;">10分钟</p>
+                    <input type="checkbox" id="speaking" onchange="updateProgress()" style="width:24px;height:24px;cursor:pointer;">
+                    <label for="speaking" style="color:#7a5a7f;cursor:pointer;">已完成</label>
+                </div>
+                
+                <div style="background:#faf5fc;padding:1.5rem;border-radius:12px;text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">📝</div>
+                    <h3 style="color:#7a5a7f;margin-bottom:0.5rem;">单词积累</h3>
+                    <p style="color:#9a7a9f;font-size:0.9rem;margin-bottom:1rem;">10分钟</p>
+                    <input type="checkbox" id="vocabulary" onchange="updateProgress()" style="width:24px;height:24px;cursor:pointer;">
+                    <label for="vocabulary" style="color:#7a5a7f;cursor:pointer;">已完成</label>
+                </div>
+            </div>
+            
+            <!-- 学习进度 -->
+            <div style="text-align:center;margin-bottom:1rem;">
+                <div style="font-size:1.2rem;color:#7a5a7f;margin-bottom:0.5rem;">今日进度：<span id="progressText">0%</span></div>
+                <div style="background:#e0d0e5;height:20px;border-radius:10px;overflow:hidden;max-width:400px;margin:0 auto;">
+                    <div id="progressBar" style="background:linear-gradient(135deg,#ff6b9d,#c44569);height:100%;width:0%;transition:width 0.3s;"></div>
+                </div>
+            </div>
+            
+            <!-- 学习笔记 -->
+            <div style="margin-top:1.5rem;">
+                <h3 style="color:#7a5a7f;margin-bottom:0.5rem;">📔 今日学习笔记</h3>
+                <textarea id="todayNotes" placeholder="记录今天学到的内容、遇到的问题、小感想..." style="width:100%;min-height:100px;padding:1rem;border:2px solid #e0d0e5;border-radius:8px;font-size:1rem;resize:vertical;"></textarea>
+            </div>
+            
+            <div style="text-align:center;margin-top:1.5rem;">
+                <button class="edit-btn" onclick="saveTodayProgress()">💾 保存今日打卡</button>
+            </div>
+        </section>
+        
+        <!-- 历史记录 -->
+        <section style="background:white;padding:2rem;border-radius:16px;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="color:#7a5a7f;margin-bottom:1rem;">📅 打卡记录</h2>
+            <div id="historyList" style="display:grid;gap:1rem;"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p> Made with 💕 by shirly | 2026</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script>
+        // 加载今日进度
+        function loadTodayProgress() {
+            const d = getData();
+            const today = new Date().toISOString().split('T')[0];
+            
+            // 初始化英语学习数据
+            if (!d.english) {
+                d.english = { history: [] };
+                saveData(d);
+            }
+            
+            // 查找今日记录
+            const todayRecord = d.english.history.find(r => r.date === today);
+            if (todayRecord) {
+                document.getElementById('listening').checked = todayRecord.listening || false;
+                document.getElementById('speaking').checked = todayRecord.speaking || false;
+                document.getElementById('vocabulary').checked = todayRecord.vocabulary || false;
+                document.getElementById('todayNotes').value = todayRecord.notes || '';
+            }
+            
+            updateProgress();
+            loadHistory();
+        }
+        
+        // 更新进度条
+        function updateProgress() {
+            const listening = document.getElementById('listening').checked;
+            const speaking = document.getElementById('speaking').checked;
+            const vocabulary = document.getElementById('vocabulary').checked;
+            
+            const completed = [listening, speaking, vocabulary].filter(Boolean).length;
+            const percent = Math.round((completed / 3) * 100);
+            
+            document.getElementById('progressText').textContent = percent + '%';
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+        
+        // 保存今日进度
+        function saveTodayProgress() {
+            const d = getData();
+            const today = new Date().toISOString().split('T')[0];
+            
+            const record = {
+                date: today,
+                listening: document.getElementById('listening').checked,
+                speaking: document.getElementById('speaking').checked,
+                vocabulary: document.getElementById('vocabulary').checked,
+                notes: document.getElementById('todayNotes').value,
+                completed: [
+                    document.getElementById('listening').checked,
+                    document.getElementById('speaking').checked,
+                    document.getElementById('vocabulary').checked
+                ].filter(Boolean).length
+            };
+            
+            // 移除旧记录，添加新记录
+            d.english.history = d.english.history.filter(r => r.date !== today);
+            d.english.history.unshift(record);
+            
+            saveData(d);
+            loadHistory();
+            alert('✅ 今日打卡已保存！');
+        }
+        
+        // 加载历史记录
+        function loadHistory() {
+            const d = getData();
+            const history = d.english?.history || [];
+            
+            if (history.length === 0) {
+                document.getElementById('historyList').innerHTML = '<p style="text-align:center;color:#9a7a9f;grid-column:1/-1;">还没有打卡记录哦，开始今天的学习吧！</p>';
+                return;
+            }
+            
+            document.getElementById('historyList').innerHTML = history.slice(0, 14).map(r => {
+                const percent = Math.round((r.completed / 3) * 100);
+                const statusEmoji = percent === 100 ? '🎉' : percent >= 66 ? '👍' : percent >= 33 ? '💪' : '😅';
+                return `
+                    <div style="background:#faf5fc;padding:1.5rem;border-radius:12px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <strong style="color:#7a5a7f;">${r.date}</strong>
+                            <span style="font-size:1.5rem;">${statusEmoji}</span>
+                        </div>
+                        <div style="color:#9a7a9f;font-size:0.9rem;margin-bottom:0.5rem;">
+                            完成度：${percent}%
+                        </div>
+                        ${r.notes ? `<div style="color:#7a5a7f;font-size:0.9rem;background:white;padding:0.5rem;border-radius:8px;">${r.notes}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 初始化
+        loadTodayProgress();
+    </script>
+</body>
+</html>
