@@ -1,0 +1,58 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>想法文章 | shirly 的可爱小窝 🌸</title><link rel="stylesheet" href="style.css">
+<style>
+.article-list{display:flex;flex-direction:column;gap:1.5rem;}
+.article-card{background:white;border-radius:25px;padding:2rem;box-shadow:0 8px 25px rgba(255,182,193,0.2);transition:all 0.3s;}
+.article-card:hover{transform:translateX(8px);}
+.article-meta{color:#9a7a9f;font-size:0.9rem;margin-bottom:0.8rem;display:flex;gap:1rem;flex-wrap:wrap;}
+.article-title{color:#ff6b9d;font-size:1.4rem;margin-bottom:0.8rem;}
+.article-summary{color:#7a5a7f;line-height:1.8;}
+.article-tag{background:#e0f7fa;color:#00acc1;padding:0.2rem 0.6rem;border-radius:12px;font-size:0.8rem;}
+.article-actions{display:flex;gap:0.5rem;margin-top:1rem;}
+.article-img{max-width:100%;border-radius:15px;margin:1rem 0;box-shadow:0 4px 15px rgba(255,182,193,0.2);}
+</style></head>
+<body>
+<nav class="navbar"><div class="nav-brand">🍊 shirly 的小窝</div><div class="nav-links"><a href="index.html">首页</a><a href="plans.html">年度计划</a><a href="works.html">作品集</a><a href="articles.html" class="active">想法文章</a><a href="diary.html">生活打卡</a><a href="timeline.html">重大事件</a><a href="movies.html">观影/书单</a><a href="collections.html">宝藏收藏</a><a href="guestbook.html">留言板</a><a href="about.html">关于我</a><a href="tools.html">管理</a></div></nav>
+<main class="container">
+<h1 style="text-align:center;color:#ff6b9d;margin-bottom:2rem;">📝 想法文章</h1>
+<div class="article-list" id="ac"></div>
+<button class="add-btn" onclick="saa()">+ 写新文章</button>
+</main>
+
+<div class="modal" id="am"><div class="modal-content">
+<h3 id="amt">+ 写新文章</h3>
+<input id="ad" placeholder="日期（比如：2026-03-06）">
+<input id="atag" placeholder="标签（比如：随想）">
+<input id="acate" placeholder="分类">
+<input id="at" placeholder="文章标题">
+<input id="art" placeholder="阅读时长">
+<div style="margin:0.8rem 0;">
+<button type="button" class="img-upload-label" onclick="document.getElementById('afi').click()">📷 上传图片</button>
+<input type="file" id="afi" accept="image/*" style="display:none;" onchange="uai(this)">
+</div>
+<img id="aip" class="img-preview" style="display:none;" />
+<textarea id="as" placeholder="文章内容"></textarea>
+<div class="modal-buttons"><button class="cancel-btn" onclick="cm('am')">取消</button><button class="save-btn" onclick="sa()">保存</button></div>
+</div></div>
+
+<footer class="footer"><p> Made with 💕 by shirly | 2026</p></footer>
+
+<script src="data.js"></script><script>
+let eaid=null, tai='';
+function la(){ const d=getData(); document.getElementById('ac').innerHTML=(d.articles||[]).map(a=>`
+<div class="article-card">
+<div class="article-meta"><span>🌸 ${a.date}</span><span class="article-tag">${a.tag}</span>${a.category?`<span>分类：${a.category}</span>`:''}${a.readTime?`<span>${a.readTime}</span>`:''}</div>
+<h2 class="article-title">${a.title}</h2>
+${a.img?`<img src="${a.img}" class="article-img">`:''}
+<p class="article-summary">${a.summary}</p>
+<div class="article-actions"><button class="edit-btn" style="padding:0.3rem 0.8rem;font-size:0.8rem;" onclick="ea(${a.id})">编辑</button><button class="delete-btn" onclick="da(${a.id})">删除</button></div>
+</div>
+`).join('')||'<p style=\"text-align:center;color:#9a7a9f;\">还没有文章哦～</p>'; }
+function uai(inp){ if(inp.files&&inp.files[0]){ imgToBase64(inp.files[0],b=>{tai=b; document.getElementById('aip').src=b; document.getElementById('aip').style.display='block';}); } }
+function saa(){ eaid=null; tai=''; const today=new Date().toISOString().split('T')[0]; document.getElementById('amt').textContent='+ 写新文章'; document.getElementById('ad').value=today; document.getElementById('atag').value=''; document.getElementById('acate').value=''; document.getElementById('at').value=''; document.getElementById('art').value=''; document.getElementById('as').value=''; document.getElementById('aip').style.display='none'; sm('am'); }
+function ea(id){ const d=getData(); const a=d.articles.find(x=>x.id===id); if(a){ eaid=id; tai=a.img||''; document.getElementById('amt').textContent='✏️ 编辑文章'; document.getElementById('ad').value=a.date||''; document.getElementById('atag').value=a.tag||''; document.getElementById('acate').value=a.category||''; document.getElementById('at').value=a.title||''; document.getElementById('art').value=a.readTime||''; document.getElementById('as').value=a.summary||''; if(a.img){ document.getElementById('aip').src=a.img; document.getElementById('aip').style.display='block'; } else { document.getElementById('aip').style.display='none'; } sm('am'); } }
+function sa(){ const d=getData(); const date=document.getElementById('ad').value.trim(); const tag=document.getElementById('atag').value.trim(); const cate=document.getElementById('acate').value.trim(); const title=document.getElementById('at').value.trim(); const rt=document.getElementById('art').value.trim(); const summary=document.getElementById('as').value.trim(); if(!title) return; if(eaid){ const a=d.articles.find(x=>x.id===eaid); if(a){a.date=date;a.tag=tag;a.category=cate;a.title=title;a.readTime=rt;a.summary=summary;if(tai)a.img=tai;} } else { const nid=Math.max(0,...(d.articles||[]).map(x=>x.id))+1; if(!d.articles)d.articles=[]; d.articles.unshift({id:nid,date,tag,category:cate,title,readTime:rt,summary,img:tai||''}); } saveData(d); la(); cm('am'); }
+function da(id){ if(!confirm('确定删除？'))return; const d=getData(); d.articles=d.articles.filter(x=>x.id!==id); saveData(d); la(); }
+function sm(i){document.getElementById(i).classList.add('show');}
+function cm(i){document.getElementById(i).classList.remove('show');}
+la();
+</script></body></html>

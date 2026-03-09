@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品集 | shirly 的可爱小窝 🌸</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .work-card {
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(255, 182, 193, 0.2);
+            transition: all 0.3s ease;
+        }
+        .work-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(255, 182, 193, 0.35);
+        }
+        .work-cover {
+            height: 180px;
+            background: linear-gradient(135deg, #ffe0f0, #e0f7fa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        .work-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .work-content {
+            padding: 1.5rem;
+        }
+        .work-content h3 {
+            color: #ff6b9d;
+            margin-bottom: 0.5rem;
+        }
+        .work-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .tag {
+            background: #fff0f7;
+            color: #ff6b9d;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+        .work-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .category-filter {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .filter-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 18px;
+            border: 2px solid #ffe0f0;
+            background: white;
+            color: #7a5a7f;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: #ffe0f0;
+            color: #ff6b9d;
+            border-color: #ff6b9d;
+        }
+        /* 强制显示上传按钮 */
+        .upload-btn-wrap {
+            display: block;
+            margin: 0.8rem 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🍊 shirly 的小窝</div>
+        <div class="nav-links">
+            <a href="index.html">首页</a>
+            <a href="plans.html">年度计划</a>
+            <a href="works.html" class="active">作品集</a>
+            <a href="articles.html">想法文章</a>
+            <a href="diary.html">生活打卡</a>
+            <a href="timeline.html">重大事件</a>
+            <a href="movies.html">观影/书单</a>
+            <a href="collections.html">宝藏收藏</a>
+            <a href="guestbook.html">留言板</a>
+            <a href="about.html">关于我</a>
+            <a href="tools.html">管理</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 style="text-align:center;color:#ff6b9d;margin-bottom:1rem;">🎨 作品集</h1>
+        
+        <div class="category-filter" id="filterBox"></div>
+
+        <div class="works-grid" id="worksContainer"></div>
+        <button class="add-btn" onclick="showAddWork()">+ 添加作品</button>
+    </main>
+
+    <div class="modal" id="workModal">
+        <div class="modal-content">
+            <h3 id="workModalTitle">+ 添加作品</h3>
+            <input id="workIcon" placeholder="图标 emoji（选填，不传图时显示）">
+            <div class="upload-btn-wrap">
+                <button type="button" class="img-upload-label" onclick="document.getElementById('workImg').click()">
+                    📷 上传作品封面
+                </button>
+                <input type="file" id="workImg" accept="image/*" style="display:none;" onchange="uwImg(this)">
+            </div>
+            <img id="workImgPrev" class="img-preview" style="display:none;" />
+            <input id="workTitle" placeholder="作品标题">
+            <input id="workCat" placeholder="分类（比如：插画/摄影/代码）">
+            <textarea id="workDesc" placeholder="作品描述"></textarea>
+            <input id="workTags" placeholder="标签（用逗号分隔，比如：插画, Procreate）">
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="closeModal('workModal')">取消</button>
+                <button class="save-btn" onclick="saveWork()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer"><p> Made with 💕 by shirly | 2026</p></footer>
+
+    <script src="data.js"></script>
+    <script>
+        let editingWorkId = null, tempWorkImg = '', currentFilter = '全部';
+
+        function loadWorks() {
+            const d = getData();
+            const cats = ['全部', ...new Set(d.works.map(w => w.category).filter(Boolean))];
+            document.getElementById('filterBox').innerHTML = cats.map(c => `
+                <button class="filter-btn ${c===currentFilter?'active':''}" onclick="setFilter('${c}')">${c}</button>
+            `).join('');
+
+            const list = currentFilter==='全部' ? d.works : d.works.filter(w=>w.category===currentFilter);
+            document.getElementById('worksContainer').innerHTML = list.map(work => `
+                <div class="work-card">
+                    <div class="work-cover">
+                        ${work.img ? `<img src="${work.img}">` : work.icon}
+                    </div>
+                    <div class="work-content">
+                        <h3>${work.title}</h3>
+                        <p>${work.desc}</p>
+                        ${work.category ? `<div style="font-size:0.85rem;color:#9a7a9f;margin-top:0.3rem;">分类：${work.category}</div>` : ''}
+                        <div class="work-tags">
+                            ${(work.tags||[]).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="work-actions">
+                            <button class="edit-btn" style="padding:0.3rem 0.8rem;font-size:0.8rem;" 
+                                    onclick="editWork(${work.id})">编辑</button>
+                            <button class="delete-btn" onclick="deleteWork(${work.id})">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') || '<p style="grid-column:1/-1;text-align:center;color:#9a7a9f;">还没有作品哦～</p>';
+        }
+
+        function setFilter(cat) { currentFilter = cat; loadWorks(); }
+        function uwImg(inp) {
+            if(inp.files && inp.files[0]) {
+                imgToBase64(inp.files[0], b=>{ tempWorkImg = b; document.getElementById('workImgPrev').src = b; document.getElementById('workImgPrev').style.display='block'; });
+            }
+        }
+
+        function showAddWork() {
+            editingWorkId = null;
+            tempWorkImg = '';
+            document.getElementById('workModalTitle').textContent = '+ 添加作品';
+            document.getElementById('workIcon').value='🌸';
+            document.getElementById('workTitle').value='';
+            document.getElementById('workCat').value='';
+            document.getElementById('workDesc').value='';
+            document.getElementById('workTags').value='';
+            document.getElementById('workImgPrev').style.display='none';
+            showModal('workModal');
+        }
+
+        function editWork(id) {
+            const d = getData();
+            const w = d.works.find(x=>x.id===id);
+            if(w) {
+                editingWorkId = id;
+                tempWorkImg = w.img || '';
+                document.getElementById('workModalTitle').textContent = '✏️ 编辑作品';
+                document.getElementById('workIcon').value = w.icon || '🌸';
+                document.getElementById('workTitle').value = w.title;
+                document.getElementById('workCat').value = w.category || '';
+                document.getElementById('workDesc').value = w.desc;
+                document.getElementById('workTags').value = (w.tags||[]).join(', ');
+                if(w.img) {
+                    document.getElementById('workImgPrev').src = w.img;
+                    document.getElementById('workImgPrev').style.display='block';
+                } else {
+                    document.getElementById('workImgPrev').style.display='none';
+                }
+                showModal('workModal');
+            }
+        }
+
+        function saveWork() {
+            const d = getData();
+            const icon = document.getElementById('workIcon').value.trim() || '🌸';
+            const title = document.getElementById('workTitle').value.trim();
+            const category = document.getElementById('workCat').value.trim();
+            const desc = document.getElementById('workDesc').value.trim();
+            const tags = document.getElementById('workTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+            if(!title) return;
+
+            if(editingWorkId) {
+                const w = d.works.find(x=>x.id===editingWorkId);
+                if(w) { w.icon=icon; w.title=title; w.category=category; w.desc=desc; w.tags=tags; if(tempWorkImg) w.img=tempWorkImg; }
+            } else {
+                const nid = Math.max(0, ...d.works.map(x=>x.id)) + 1;
+                d.works.unshift({ id:nid, icon, title, category, desc, tags, img: tempWorkImg||'' });
+            }
+            saveData(d);
+            loadWorks();
+            closeModal('workModal');
+        }
+
+        function deleteWork(id) {
+            if(!confirm('确定删除这个作品吗？')) return;
+            const d = getData();
+            d.works = d.works.filter(x=>x.id!==id);
+            saveData(d);
+            loadWorks();
+        }
+
+        function showModal(i) { document.getElementById(i).classList.add('show'); }
+        function closeModal(i) { document.getElementById(i).classList.remove('show'); }
+
+        loadWorks();
+    </script>
+</body></html>

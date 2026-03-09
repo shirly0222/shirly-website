@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年度计划 | shirly 的可爱小窝 🌸</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .plan-section {
+            background: white;
+            border-radius: 25px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 25px rgba(255, 182, 193, 0.2);
+        }
+        .plan-section h2 {
+            color: #ff6b9d;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .goal-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #fff5f9;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+        }
+        .goal-checkbox {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 3px solid #ffb6c1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .goal-checkbox.checked {
+            background: #ff6b9d;
+            border-color: #ff6b9d;
+        }
+        .goal-checkbox.checked::after {
+            content: "✓";
+            color: white;
+            font-weight: bold;
+        }
+        .goal-text {
+            flex: 1;
+        }
+        .goal-text.done {
+            text-decoration: line-through;
+            color: #b8a8bc;
+        }
+        .progress-bar {
+            height: 20px;
+            background: #ffe0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b9d, #ffb6c1);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+        }
+        .progress-label {
+            text-align: right;
+            color: #9a7a9f;
+            font-size: 0.9rem;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🍊 shirly 的小窝</div>
+        <div class="nav-links">
+            <a href="index.html">首页</a>
+            <a href="plans.html" class="active">年度计划</a>
+            <a href="works.html">作品集</a>
+            <a href="articles.html">想法文章</a>
+            <a href="diary.html">生活打卡</a>
+            <a href="timeline.html">重大事件</a>
+            <a href="about.html">关于我</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 style="text-align:center;color:#ff6b9d;margin-bottom:2rem;">📅 2026 年度计划</h1>
+
+        <div class="plan-section">
+            <h2>✨ 年度总进度</h2>
+            <div class="progress-bar"><div class="progress-fill" id="tp"></div></div>
+            <div class="progress-label" id="pt">0% 完成</div>
+        </div>
+
+        <div id="pc"></div>
+        <button class="add-btn" onclick="sap()">+ 添加新目标</button>
+    </main>
+
+    <div class="modal" id="pm">
+        <div class="modal-content">
+            <h3 id="pmt">+ 添加目标</h3>
+            <input id="pit" placeholder="目标内容">
+            <select id="pic" style="width:100%;padding:0.8rem;margin-bottom:1rem;border:2px solid #ffe0f0;border-radius:15px;">
+                <option value="学习成长">📚 学习成长</option>
+                <option value="生活健康">🌸 生活健康</option>
+                <option value="休闲娱乐">🎬 休闲娱乐</option>
+            </select>
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="cm('pm')">取消</button>
+                <button class="save-btn" onclick="sp()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer"><p> Made with 💕 by shirly | 2026</p></footer>
+
+    <script src="data.js"></script>
+    <script>
+        let eid=null;
+        function lp(){const d=gD();const c=document.getElementById('pc');const cats=[...new Set(d.plans.map(p=>p.category))];
+            c.innerHTML=cats.map(cat=>`
+                <div style="margin-bottom:2rem;">
+                    <h2 style="margin-bottom:1rem;">${cat==='学习成长'?'📚':cat==='生活健康'?'🌸':'🎬'} ${cat}</h2>
+                    ${d.plans.filter(p=>p.category===cat).map(p=>`
+                        <div class="goal-item">
+                            <div class="goal-checkbox ${p.done?'checked':''}" onclick="tp(${p.id})"></div>
+                            <div class="goal-text ${p.done?'done':''}">${p.text}</div>
+                            <button class="edit-btn" style="padding:0.3rem 0.8rem;font-size:0.8rem;" onclick="ep(${p.id})">编辑</button>
+                            <button class="delete-btn" onclick="dp(${p.id})">删除</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+            const t=d.plans.length,dn=d.plans.filter(p=>p.done).length,pct=t>0?Math.round((dn/t)*100):0;
+            document.getElementById('tp').style.width=pct+'%';document.getElementById('pt').textContent=pct+'% 完成';
+        }
+        function tp(i){const d=gD();const p=d.plans.find(x=>x.id===i);if(p){p.done=!p.done;sD(d);lp();}}
+        function sap(){eid=null;document.getElementById('pmt').textContent='+ 添加目标';document.getElementById('pit').value='';document.getElementById('pic').value='学习成长';sm('pm');}
+        function ep(i){eid=i;const d=gD();const p=d.plans.find(x=>x.id===i);if(p){document.getElementById('pmt').textContent='✏️ 编辑目标';document.getElementById('pit').value=p.text;document.getElementById('pic').value=p.category;sm('pm');}}
+        function sp(){const d=gD();const t=document.getElementById('pit').value.trim();const c=document.getElementById('pic').value;if(!t)return;
+            if(eid){const p=d.plans.find(x=>x.id===eid);if(p){p.text=t;p.category=c;}}
+            else{const nid=Math.max(0,...d.plans.map(x=>x.id))+1;d.plans.push({id:nid,text:t,done:false,category:c});}
+            sD(d);lp();cm('pm');
+        }
+        function dp(i){if(!confirm('确定删除？'))return;const d=gD();d.plans=d.plans.filter(x=>x.id!==i);sD(d);lp();}
+        function sm(i){document.getElementById(i).classList.add('show');}
+        function cm(i){document.getElementById(i).classList.remove('show');}
+        lp();
+    </script>
+</body>
+</html>

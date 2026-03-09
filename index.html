@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>shirly 的可爱小窝 🌸</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">🍊 shirly 的小窝</div>
+        <div class="nav-links">
+            <a href="index.html" class="active">首页</a>
+            <a href="plans.html">年度计划</a>
+            <a href="works.html">作品集</a>
+            <a href="articles.html">想法文章</a>
+            <a href="diary.html">生活打卡</a>
+            <a href="timeline.html">重大事件</a>
+            <a href="movies.html">观影/书单</a>
+            <a href="collections.html">宝藏收藏</a>
+            <a href="guestbook.html">留言板</a>
+            <a href="about.html">关于我</a>
+            <a href="tools.html">管理</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <div style="position:relative;display:inline-block;">
+                    <div class="hero-avatar" id="ha">🌸</div>
+                    <img id="hai" style="display:none;width:120px;height:120px;border-radius:50%;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);" />
+                </div>
+                <h1 id="ht">欢迎来到 shirly 的可爱小窝！</h1>
+                <p id="hd">这里记录着我的生活、想法、作品和成长 ✨</p>
+                <button class="edit-btn" onclick="eh()">✏️ 编辑首页</button>
+            </div>
+        </section>
+
+        <section class="quick-links">
+            <h2>✨ 快速逛逛</h2>
+            <div class="links-grid">
+                <a href="plans.html" class="link-card"><span class="card-icon">📅</span><h3>年度计划</h3><p>今年的目标与进度</p></a>
+                <a href="works.html" class="link-card"><span class="card-icon">🎨</span><h3>作品集</h3><p>我的作品展示</p></a>
+                <a href="articles.html" class="link-card"><span class="card-icon">📝</span><h3>想法文章</h3><p>一些胡思乱想</p></a>
+                <a href="diary.html" class="link-card"><span class="card-icon">✨</span><h3>生活打卡</h3><p>日常小记录</p></a>
+                <a href="timeline.html" class="link-card"><span class="card-icon">🌟</span><h3>重大事件</h3><p>人生里程碑</p></a>
+                <a href="movies.html" class="link-card"><span class="card-icon">🎬</span><h3>观影/书单</h3><p>看过的好东西</p></a>
+                <a href="collections.html" class="link-card"><span class="card-icon">💎</span><h3>宝藏收藏</h3><p>喜欢的好物</p></a>
+                <a href="guestbook.html" class="link-card"><span class="card-icon">📮</span><h3>留言板</h3><p>来留爪印吧</p></a>
+                <a href="about.html" class="link-card"><span class="card-icon">🍊</span><h3>关于我</h3><p>认识一下</p></a>
+                <a href="tools.html" class="link-card"><span class="card-icon">🔧</span><h3>管理</h3><p>备份/设置</p></a>
+            </div>
+        </section>
+
+        <section style="margin-top:3rem;">
+            <h2 style="text-align:center;color:#7a5a7f;margin-bottom:2rem;">💫 最近动态</h2>
+            <div class="links-grid" id="recent"></div>
+        </section>
+    </main>
+
+    <div class="modal" id="hm">
+        <div class="modal-content">
+            <h3>✏️ 编辑首页</h3>
+            <input id="ia" placeholder="头像 emoji">
+            <div>
+                <label class="img-upload-label">📷 上传头像图片</label>
+                <input type="file" class="img-upload-input" id="iainp" accept="image/*" onchange="uha(this)">
+            </div>
+            <img id="hapv" class="img-preview" style="display:none;" />
+            <input id="it" placeholder="标题">
+            <textarea id="ide" placeholder="描述"></textarea>
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="cm('hm')">取消</button>
+                <button class="save-btn" onclick="sh()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer"><p> Made with 💕 by shirly | 2026</p></footer>
+
+    <script src="data.js"></script>
+    <script>
+        let tempHomeImg = '';
+        function lh(){
+            const d=getData();
+            const ha=document.getElementById('ha'), hai=document.getElementById('hai');
+            ha.textContent=d.home.avatar;
+            document.getElementById('ht').textContent=d.home.title;
+            document.getElementById('hd').textContent=d.home.desc;
+            if(d.home.avatarImg){
+                ha.style.opacity='0';
+                hai.style.display='block';
+                hai.src=d.home.avatarImg;
+            } else {
+                ha.style.opacity='1';
+                hai.style.display='none';
+            }
+            const rc=[];
+            if(d.articles && d.articles[0]) rc.push({...d.articles[0],type:'article'});
+            if(d.diary && d.diary[0]) rc.push({...d.diary[0],type:'diary'});
+            if(d.timeline && d.timeline[0]) rc.push({...d.timeline[0],type:'timeline'});
+            if(d.movies && d.movies[0]) rc.push({...d.movies[0],type:'movie'});
+            document.getElementById('recent').innerHTML = rc.length ? rc.map(i=>`
+                <div class="link-card" style="text-align:left;">
+                    <span class="card-icon">${i.type==='article'?'📝':i.type==='diary'?'✨':i.type==='movie'?'🎬':'🌟'}</span>
+                    <h3 style="font-size:1.1rem;">${i.title || i.content?.slice(0,22)||'...'}</h3>
+                    <p style="font-size:0.85rem;color:#9a7a9f;">${i.date || ''}</p>
+                </div>
+            `).join('') : '<p style="grid-column:1/-1;text-align:center;color:#9a7a9f;">还没有动态哦，去写点什么吧～</p>';
+        }
+        function uha(inp){if(inp.files && inp.files[0]){imgToBase64(inp.files[0],b=>{tempHomeImg=b;document.getElementById('hapv').src=b;document.getElementById('hapv').style.display='block';});}}
+        function eh(){const d=getData();tempHomeImg=d.home.avatarImg||'';document.getElementById('ia').value=d.home.avatar;document.getElementById('it').value=d.home.title;document.getElementById('ide').value=d.home.desc;if(d.home.avatarImg){document.getElementById('hapv').src=d.home.avatarImg;document.getElementById('hapv').style.display='block';}else{document.getElementById('hapv').style.display='none';}sm('hm');}
+        function sh(){const d=getData();d.home.avatar=document.getElementById('ia').value||'🌸';d.home.title=document.getElementById('it').value;d.home.desc=document.getElementById('ide').value;if(tempHomeImg)d.home.avatarImg=tempHomeImg;saveData(d);lh();cm('hm');}
+        function sm(i){document.getElementById(i).classList.add('show');}
+        function cm(i){document.getElementById(i).classList.remove('show');}
+        lh();
+    </script>
+</body></html>
