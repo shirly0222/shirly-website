@@ -57,7 +57,29 @@
             <h2 style="text-align:center;color:#7a5a7f;margin-bottom:2rem;">💫 最近动态</h2>
             <div class="links-grid" id="recent"></div>
         </section>
+        
+        <section style="margin-top:3rem;text-align:center;">
+            <h2 style="color:#7a5a7f;margin-bottom:2rem;">☁️ 数据同步</h2>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <button class="edit-btn" onclick="showTokenModal()">🔑 设置 GitHub Token</button>
+                <button class="edit-btn" onclick="syncToGitHub()">💾 保存到 GitHub</button>
+                <button class="edit-btn" onclick="loadFromGitHub()">📥 从 GitHub 加载</button>
+            </div>
+        </section>
     </main>
+    
+    <!-- Token 设置弹窗 -->
+    <div class="modal" id="tokenModal">
+        <div class="modal-content">
+            <h3>🔑 设置 GitHub Token</h3>
+            <input id="tokenInput" placeholder="输入你的 GitHub Token" style="width:100%;padding:0.8rem;margin:1rem 0;border:2px solid #e0d0e5;border-radius:8px;font-size:1rem;">
+            <p style="font-size:0.9rem;color:#9a7a9f;margin-bottom:1rem;">Token 只会保存在你的浏览器里，不会上传到任何地方！</p>
+            <div class="modal-buttons">
+                <button class="cancel-btn" onclick="cm('tokenModal')">取消</button>
+                <button class="save-btn" onclick="saveToken()">保存</button>
+            </div>
+        </div>
+    </div>
 
     <div class="modal" id="hm">
         <div class="modal-content">
@@ -114,6 +136,16 @@
         function sh(){const d=getData();d.home.avatar=document.getElementById('ia').value||'🌸';d.home.title=document.getElementById('it').value;d.home.desc=document.getElementById('ide').value;if(tempHomeImg)d.home.avatarImg=tempHomeImg;saveData(d);lh();cm('hm');}
         function sm(i){document.getElementById(i).classList.add('show');}
         function cm(i){document.getElementById(i).classList.remove('show');}
+        function showTokenModal(){sm('tokenModal');}
+        function saveToken(){
+            const token=document.getElementById('tokenInput').value.trim();
+            if(token){
+                setGitHubToken(token);
+                cm('tokenModal');
+            }else{
+                alert('请输入 Token！');
+            }
+        }
         lh();
     </script>
 </body></html>
